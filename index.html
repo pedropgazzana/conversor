@@ -132,17 +132,18 @@
     // Utilitários numéricos com suporte a vírgula
     const toNumber = (v) => {
       if (typeof v !== 'string') return Number(v);
-      const norm = v.trim().replace(/\./g, '').replace(',', '.'); // aceita "1.234,56" e "1234.56"
-      const n = Number(norm);
+      const s = v.trim();
+      if (s === '') return NaN;
+      // Se tiver vírgula, assumimos formato pt-BR (decimal=",") e removemos apenas pontos de milhar
+      if (s.includes(',')) {
+        const norm = s.replace(/\./g, '').replace(',', '.');
+        const n = Number(norm);
+        return Number.isFinite(n) ? n : NaN;
+      }
+      // Sem vírgula: assumimos ponto como decimal e NÃO removemos pontos
+      const n = Number(s);
       return Number.isFinite(n) ? n : NaN;
-    }
-    const fmt = (n) => {
-      if (!Number.isFinite(n)) return '';
-      return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-    }
-
-    // Estado & persistência
-    const LS_KEYS = { USD: 'rateUSD_BRL', ARS: 'rateARS_BRL', TS: 'rateTS' };
+    };
     const $ = (id) => document.getElementById(id);
 
     function loadRates() {
