@@ -144,7 +144,21 @@
       const n = Number(s);
       return Number.isFinite(n) ? n : NaN;
     };
+
+    // Formatadores: valores (2 casas) x cotações (até 6 casas)
+    const fmtValue = (n) => {
+      if (!Number.isFinite(n)) return '';
+      return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    };
+    const fmtRate = (n) => {
+      if (!Number.isFinite(n)) return '';
+      return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 6 }).format(n);
+    };
+
     const $ = (id) => document.getElementById(id);
+
+    // Chaves de armazenamento
+    const LS_KEYS = { USD: 'rateUSD_BRL', ARS: 'rateARS_BRL', TS: 'rateTS' };
 
     function loadRates() {
       const usd = toNumber(localStorage.getItem(LS_KEYS.USD));
@@ -174,8 +188,8 @@
 
     function setRateInputs({ usd, ars }) {
       // Mostra o valor salvo (ou vazio)
-      $("rateUSD").value = usd != null ? fmt(usd) : '';
-      $("rateARS").value = ars != null ? fmt(ars) : '';
+      $("rateUSD").value = usd != null ? fmtRate(usd) : '';
+      $("rateARS").value = ars != null ? fmtRate(ars) : '';
       updateWarn();
     }
 
@@ -227,20 +241,20 @@
         const usd = toNumber($usd.value);
         const brl = usd * rUSD;
         const ars = brl / rARS;
-        $brl.value = fmt(brl);
-        $ars.value = fmt(ars);
+        $brl.value = fmtValue(brl);
+        $ars.value = fmtValue(ars);
       } else if (source === 'ars') {
         const ars = toNumber($ars.value);
         const brl = ars * rARS;
         const usd = brl / rUSD;
-        $brl.value = fmt(brl);
-        $usd.value = fmt(usd);
+        $brl.value = fmtValue(brl);
+        $usd.value = fmtValue(usd);
       } else if (source === 'brl') {
         const brl = toNumber($brl.value);
         const usd = brl / rUSD;
         const ars = brl / rARS;
-        $usd.value = fmt(usd);
-        $ars.value = fmt(ars);
+        $usd.value = fmtValue(usd);
+        $ars.value = fmtValue(ars);
       }
       lock = false;
     }
@@ -268,8 +282,8 @@
     // Botões
     $("btnDefault").addEventListener('click', () => {
       const def = defaultRates();
-      $("rateUSD").value = fmt(def.usd);
-      $("rateARS").value = fmt(def.ars);
+      $("rateUSD").value = fmtRate(def.usd);
+      $("rateARS").value = fmtRate(def.ars);
       saveRates(def.usd, def.ars);
       updateWarn();
       convertFrom('brl');
