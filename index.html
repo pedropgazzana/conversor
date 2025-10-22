@@ -6,62 +6,67 @@
   <title>Conversor de Moedas (Offline)</title>
   <style>
     :root {
-      --bg: #0b1220;
-      --card: #11182a;
-      --muted: #8aa0b6;
-      --text: #eaf2ff;
-      --accent: #4da3ff;
-      --danger: #ff6b6b;
-      --ring: rgba(77,163,255,.4);
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #5a6b7b;
+      --text: #111827;
+      --accent: #2563eb;
+      --danger: #dc2626;
+      --ring: rgba(37, 99, 235, .25);
     }
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    html, body {
+      margin: 0; font: 15px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text); background: var(--bg);
+      display: grid; place-items: center; padding: 12px;
+    }
     body {
       margin: 0; font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       color: var(--text); background: radial-gradient(1200px 700px at 20% -10%, #1a2550, #0b1220 60%);
       display: grid; place-items: center; padding: 24px;
     }
     .app {
-      width: 100%; max-width: 800px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-      border: 1px solid rgba(255,255,255,.08); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+      width: 100%; max-width: 560px; background: var(--card);
+      border: 1px solid rgba(0,0,0,.06); border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.08);
       overflow: hidden;
     }
-    header { padding: 22px 22px 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; font-weight: 650; }
-    header .muted { color: var(--muted); font-size: 13px; }
-    .wrap { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 0 22px 22px; }
+    header { padding: 12px 12px 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    header h1 { font-size: 16px; margin: 0; letter-spacing: .2px; font-weight: 650; }
+    header .muted { color: var(--muted); font-size: 12px; }
+    .wrap { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 0 12px 12px; }
 
-    .card { background: var(--card); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 16px; }
-    .card h2 { margin: 0 0 10px; font-size: 15px; color: var(--muted); font-weight: 600; }
+    .card { background: var(--card); border: 1px solid rgba(0,0,0,.06); border-radius: 12px; padding: 12px; }
+    .card h2 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
 
-    .row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center; margin-bottom: 10px; }
-    .label { color: var(--muted); font-size: 14px; }
+    .row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .label { color: var(--muted); font-size: 13px; }
 
     input[type="text"] {
-      width: 100%; padding: 14px 14px; font-size: 18px; color: var(--text); background: #0c1426; border: 1px solid rgba(255,255,255,.08);
-      border-radius: 12px; outline: none; transition: box-shadow .2s, border-color .2s;
+      width: 100%; padding: 10px 12px; font-size: 16px; color: var(--text); background: #fff; border: 1px solid rgba(0,0,0,.12);
+      border-radius: 10px; outline: none; transition: box-shadow .15s, border-color .15s;
     }
-    input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 6px var(--ring); }
-    input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 6px rgba(255,107,107,.2); }
+    input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+    input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(220,38,38,.2); }
 
-    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
     .danger { color: var(--danger); }
 
-    .grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;
-    }
-    .tile { background: #0c1426; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 12px; }
-    .tile .title { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 6px; }
+    .tile { background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 10px; }
+    .tile .title { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 
-    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    button { appearance: none; border: 1px solid rgba(255,255,255,.12); background: #0c1426; color: var(--text); padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 600; }
-    button:hover { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    button { appearance: none; border: 1px solid rgba(0,0,0,.12); background: #f8fafc; color: var(--text); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    button:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
 
-    footer { padding: 12px 22px 20px; color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    footer { padding: 8px 12px 12px; color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
     @media (max-width: 720px) {
       .row { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: repeat(3, 1fr); }
+      header { flex-direction: column; align-items: flex-start; gap: 2px; }
+    }
       .grid { grid-template-columns: 1fr; }
       header { flex-direction: column; align-items: flex-start; gap: 4px; }
     }
