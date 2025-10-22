@@ -1,4 +1,4 @@
-const CACHE = "convmoedas-v2";
+const CACHE = "convmoedas-v3";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
@@ -16,4 +16,5 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   e.respondWith(caches.match(e.request).then((resp) => resp || fetch(e.request)));
 });
+
 
