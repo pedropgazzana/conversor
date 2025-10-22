@@ -131,16 +131,54 @@
   <script>
     // Utilitários numéricos com suporte a vírgula
     const toNumber = (v) => {
-      if (typeof v !== 'string') return Number(v);
-      const s = v.trim();
+      if (v === null || v === undefined) return NaN;
+      let s = String(v).trim();
       if (s === '') return NaN;
-      // Se tiver vírgula, assumimos formato pt-BR (decimal=",") e removemos apenas pontos de milhar
-      if (s.includes(',')) {
-        const norm = s.replace(/\./g, '').replace(',', '.');
-        const n = Number(norm);
+
+      const hasComma = s.includes(',');
+      const hasDot = s.includes('.');
+
+      // Caso com vírgula e ponto: decide pelo último separador como decimal
+      if (hasComma && hasDot) {
+        const lastComma = s.lastIndexOf(',');
+        const lastDot = s.lastIndexOf('.');
+        if (lastComma > lastDot) {
+          // vírgula é decimal → remove todos os pontos (milhar) e troca vírgula por ponto
+          s = s.replace(/\./g, '').replace(/,/g, '.');
+        } else {
+          // ponto é decimal → remove todas as vírgulas (milhar)
+          s = s.replace(/,/g, '');
+          // Se houver mais de um ponto, mantém apenas o último como decimal
+          const parts = s.split('.');
+          if (parts.length > 2) {
+            const dec = parts.pop();
+            s = parts.join('') + '.' + dec;
+          }
+        }
+        const n = Number(s);
         return Number.isFinite(n) ? n : NaN;
       }
-      // Sem vírgula: assumimos ponto como decimal e NÃO removemos pontos
+
+      // Apenas vírgula: pt-BR (decimal=',')
+      if (hasComma) {
+        s = s.replace(/\./g, '').replace(/,/g, '.');
+        const n = Number(s);
+        return Number.isFinite(n) ? n : NaN;
+      }
+
+      // Apenas ponto: en-US (decimal='.')
+      if (hasDot) {
+        // Se houver múltiplos pontos, considera o último como decimal e remove os anteriores (milhar)
+        const parts = s.split('.');
+        if (parts.length > 2) {
+          const dec = parts.pop();
+          s = parts.join('') + '.' + dec;
+        }
+        const n = Number(s);
+        return Number.isFinite(n) ? n : NaN;
+      }
+
+      // Sem separadores
       const n = Number(s);
       return Number.isFinite(n) ? n : NaN;
     };
