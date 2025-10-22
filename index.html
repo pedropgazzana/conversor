@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conversor de Moedas (Offline)</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #11182a;
+      --muted: #8aa0b6;
+      --text: #eaf2ff;
+      --accent: #4da3ff;
+      --danger: #ff6b6b;
+      --ring: rgba(77,163,255,.4);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text); background: radial-gradient(1200px 700px at 20% -10%, #1a2550, #0b1220 60%);
+      display: grid; place-items: center; padding: 24px;
+    }
+    .app {
+      width: 100%; max-width: 800px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border: 1px solid rgba(255,255,255,.08); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,.4);
+      overflow: hidden;
+    }
+    header { padding: 22px 22px 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; font-weight: 650; }
+    header .muted { color: var(--muted); font-size: 13px; }
+    .wrap { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 0 22px 22px; }
+
+    .card { background: var(--card); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 16px; }
+    .card h2 { margin: 0 0 10px; font-size: 15px; color: var(--muted); font-weight: 600; }
+
+    .row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .label { color: var(--muted); font-size: 14px; }
+
+    input[type="text"] {
+      width: 100%; padding: 14px 14px; font-size: 18px; color: var(--text); background: #0c1426; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; outline: none; transition: box-shadow .2s, border-color .2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 6px var(--ring); }
+    input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 6px rgba(255,107,107,.2); }
+
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .danger { color: var(--danger); }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;
+    }
+    .tile { background: #0c1426; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 12px; }
+    .tile .title { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { appearance: none; border: 1px solid rgba(255,255,255,.12); background: #0c1426; color: var(--text); padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+    button:hover { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+
+    footer { padding: 12px 22px 20px; color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    @media (max-width: 720px) {
+      .row { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    }
+  </style>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0b1220" />
+</head>
+<body>
+  <div class="app" role="application" aria-label="Conversor de moedas offline (USD/ARS/BRL)">
+    <header>
+      <h1>Conversor de Moedas • USD ⇄ ARS ⇄ BRL</h1>
+      <div class="muted">Funciona 100% offline — sem APIs</div>
+    </header>
+
+    <section class="wrap">
+      <div class="card" aria-labelledby="lbl-cotacoes">
+        <h2 id="lbl-cotacoes">Cotações (base em BRL)</h2>
+        <div class="row">
+          <div class="label">1 <span class="mono">USD</span> =</div>
+          <div>
+            <input id="rateUSD" type="text" inputmode="decimal" placeholder="ex.: 5,00" aria-describedby="hint-usd" />
+            <div id="hint-usd" class="hint">Informe quantos <strong>BRL</strong> valem <strong>1 USD</strong>. Salva automaticamente.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="label">1 <span class="mono">ARS</span> =</div>
+          <div>
+            <input id="rateARS" type="text" inputmode="decimal" placeholder="ex.: 0,02" aria-describedby="hint-ars" />
+            <div id="hint-ars" class="hint">Informe quantos <strong>BRL</strong> valem <strong>1 ARS</strong>. Salva automaticamente.</div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button id="btnDefault">Restaurar cotações padrão</button>
+          <button id="btnClearRates" title="Apagar apenas as cotações salvas">Limpar cotações</button>
+        </div>
+      </div>
+
+      <div class="card" aria-labelledby="lbl-conversor">
+        <h2 id="lbl-conversor">Conversor</h2>
+        <div class="grid">
+          <div class="tile">
+            <div class="title">Valor em <strong>USD</strong></div>
+            <input id="usd" type="text" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div class="tile">
+            <div class="title">Valor em <strong>ARS</strong></div>
+            <input id="ars" type="text" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div class="tile">
+            <div class="title">Valor em <strong>BRL</strong></div>
+            <input id="brl" type="text" inputmode="decimal" placeholder="0,00" />
+          </div>
+        </div>
+        <div class="toolbar">
+          <button id="btnClearValues">Limpar valores</button>
+        </div>
+        <div id="warn" class="hint danger" style="display:none;">Defina cotações válidas (&gt; 0) para converter.</div>
+      </div>
+    </section>
+
+    <footer>
+      <div>Última atualização das cotações: <span id="lastUpdated" class="mono">—</span></div>
+      <div class="muted">Dica: use vírgula ou ponto para decimais</div>
+    </footer>
+  </div>
+
+  <script>
+    // Utilitários numéricos com suporte a vírgula
+    const toNumber = (v) => {
+      if (typeof v !== 'string') return Number(v);
+      const norm = v.trim().replace(/\./g, '').replace(',', '.'); // aceita "1.234,56" e "1234.56"
+      const n = Number(norm);
+      return Number.isFinite(n) ? n : NaN;
+    }
+    const fmt = (n) => {
+      if (!Number.isFinite(n)) return '';
+      return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    }
+
+    // Estado & persistência
+    const LS_KEYS = { USD: 'rateUSD_BRL', ARS: 'rateARS_BRL', TS: 'rateTS' };
+    const $ = (id) => document.getElementById(id);
+
+    function loadRates() {
+      const usd = toNumber(localStorage.getItem(LS_KEYS.USD));
+      const ars = toNumber(localStorage.getItem(LS_KEYS.ARS));
+      const ts = localStorage.getItem(LS_KEYS.TS);
+      return { usd: Number.isFinite(usd) ? usd : null, ars: Number.isFinite(ars) ? ars : null, ts };
+    }
+
+    function saveRates(usd, ars) {
+      if (Number.isFinite(usd)) localStorage.setItem(LS_KEYS.USD, String(usd));
+      if (Number.isFinite(ars)) localStorage.setItem(LS_KEYS.ARS, String(ars));
+      const ts = new Date().toISOString();
+      localStorage.setItem(LS_KEYS.TS, ts);
+      updateLastUpdated(ts);
+    }
+
+    function updateLastUpdated(ts) {
+      if (!ts) { $("lastUpdated").textContent = '—'; return; }
+      try {
+        const d = new Date(ts);
+        const f = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(d);
+        $("lastUpdated").textContent = f;
+      } catch {
+        $("lastUpdated").textContent = '—';
+      }
+    }
+
+    function setRateInputs({ usd, ars }) {
+      // Mostra o valor salvo (ou vazio)
+      $("rateUSD").value = usd != null ? fmt(usd) : '';
+      $("rateARS").value = ars != null ? fmt(ars) : '';
+      updateWarn();
+    }
+
+    function defaultRates() {
+      // Valores de exemplo: ajuste quando quiser
+      // 1 USD = 5.00 BRL, 1 ARS = 0.02 BRL
+      return { usd: 5.00, ars: 0.02 };
+    }
+
+    function clearValues() {
+      ["usd","ars","brl"].forEach(id => $(id).value = '');
+    }
+
+    function clearRates() {
+      localStorage.removeItem(LS_KEYS.USD);
+      localStorage.removeItem(LS_KEYS.ARS);
+      localStorage.removeItem(LS_KEYS.TS);
+      setRateInputs({ usd: null, ars: null });
+      updateLastUpdated(null);
+      clearValues();
+    }
+
+    function updateWarn() {
+      const { usd, ars } = getCurrentRates();
+      const invalid = !(usd > 0 && ars > 0);
+      $("warn").style.display = invalid ? 'block' : 'none';
+      $("rateUSD").setAttribute('aria-invalid', String(!(usd > 0)));
+      $("rateARS").setAttribute('aria-invalid', String(!(ars > 0)));
+    }
+
+    function getCurrentRates() {
+      // Lê dos inputs (não do storage) para refletir mudanças imediatas
+      const usd = toNumber($("rateUSD").value);
+      const ars = toNumber($("rateARS").value);
+      return { usd, ars };
+    }
+
+    // Conversão principal
+    let lock = false; // evita loops de atualização
+    function convertFrom(source) {
+      if (lock) return; lock = true;
+      const { usd: rUSD, ars: rARS } = getCurrentRates();
+
+      if (!(rUSD > 0 && rARS > 0)) { lock = false; return; }
+
+      const $usd = $("usd"), $ars = $("ars"), $brl = $("brl");
+
+      if (source === 'usd') {
+        const usd = toNumber($usd.value);
+        const brl = usd * rUSD;
+        const ars = brl / rARS;
+        $brl.value = fmt(brl);
+        $ars.value = fmt(ars);
+      } else if (source === 'ars') {
+        const ars = toNumber($ars.value);
+        const brl = ars * rARS;
+        const usd = brl / rUSD;
+        $brl.value = fmt(brl);
+        $usd.value = fmt(usd);
+      } else if (source === 'brl') {
+        const brl = toNumber($brl.value);
+        const usd = brl / rUSD;
+        const ars = brl / rARS;
+        $usd.value = fmt(usd);
+        $ars.value = fmt(ars);
+      }
+      lock = false;
+    }
+
+    // Eventos
+    $("usd").addEventListener('input', () => convertFrom('usd'));
+    $("ars").addEventListener('input', () => convertFrom('ars'));
+    $("brl").addEventListener('input', () => convertFrom('brl'));
+
+    // Auto-salvar cotações no storage e recalcular
+    ["rateUSD","rateARS"].forEach(id => {
+      $(id).addEventListener('input', () => {
+        const { usd, ars } = getCurrentRates();
+        updateWarn();
+        if (usd > 0 && ars > 0) {
+          saveRates(usd, ars);
+          // Recalcula mantendo o último campo que o usuário tocou
+          // Se nenhum, recalcula a partir de BRL
+          const active = document.activeElement?.id;
+          if (['usd','ars','brl'].includes(active)) convertFrom(active);
+        }
+      });
+    });
+
+    // Botões
+    $("btnDefault").addEventListener('click', () => {
+      const def = defaultRates();
+      $("rateUSD").value = fmt(def.usd);
+      $("rateARS").value = fmt(def.ars);
+      saveRates(def.usd, def.ars);
+      updateWarn();
+      convertFrom('brl');
+    });
+
+    $("btnClearValues").addEventListener('click', clearValues);
+    $("btnClearRates").addEventListener('click', clearRates);
+
+    // Boot
+    (function init() {
+      const stored = loadRates();
+      if (stored.usd && stored.ars) {
+        setRateInputs({ usd: stored.usd, ars: stored.ars });
+        updateLastUpdated(stored.ts);
+      } else {
+        setRateInputs({ usd: null, ars: null });
+        updateWarn();
+      }
+    })();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
+</body>
+</html>
